@@ -8,6 +8,15 @@
 
 </div>
 
+## 关于本 fork
+
+本仓库 fork 自 [CVHub520/X-AnyLabeling](https://github.com/CVHub520/X-AnyLabeling)，新增两种不需要人工审核的自动标注方式：
+
+- **VLM Annotator**：由视觉语言模型（本机 Codex CLI、本机 Claude CLI 或 OpenAI 兼容中转站）根据文本提示词，直接为任意类别生成多边形或矩形。批量标注时多张图片并发请求，并发数像 TCP 发送窗口一样自动调整。
+- **SAM 3.1**：通过 Remote-Server 使用，支持文本提示、点击或框选单个目标、示例框找相似，由本地运行的 [X-AnyLabeling-Server fork](https://github.com/YoghourtM/X-AnyLabeling-Server/tree/feat/sam3.1) 提供。
+
+使用说明：[docs/zh_cn/vlm_annotator.md](./docs/zh_cn/vlm_annotator.md)（[English](./docs/en/vlm_annotator.md)）。以下内容为上游原文。
+
 <p align="center">
     <a href="./LICENSE"><img src="https://img.shields.io/badge/License-GPL%20v3-blue.svg"></a>
     <a href="https://github.com/CVHub520/X-AnyLabeling/releases/latest"><img src="https://img.shields.io/github/v/release/CVHub520/X-AnyLabeling?color=ffa"></a>

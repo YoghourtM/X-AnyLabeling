@@ -8,6 +8,15 @@
 
 </div>
 
+## About this fork
+
+This fork of [CVHub520/X-AnyLabeling](https://github.com/CVHub520/X-AnyLabeling) adds two auto-labeling modes that need no manual review:
+
+- **VLM Annotator**: a vision-language model (local Codex CLI, local Claude CLI, or an OpenAI-compatible relay) draws polygons or rectangles directly for any classes you describe in a text prompt. Batch runs send images concurrently with a TCP-style adaptive window.
+- **SAM 3.1** through Remote-Server: text prompts, clicks / a box, and example boxes, served locally by the [X-AnyLabeling-Server fork](https://github.com/YoghourtM/X-AnyLabeling-Server/tree/feat/sam3.1).
+
+Usage: [docs/en/vlm_annotator.md](./docs/en/vlm_annotator.md) ([中文](./docs/zh_cn/vlm_annotator.md)). The rest of this README is upstream's.
+
 <p align="center">
     <a href="./LICENSE"><img src="https://img.shields.io/badge/License-GPL%20v3-blue.svg"></a>
     <a href="https://github.com/CVHub520/X-AnyLabeling/releases/latest"><img src="https://img.shields.io/github/v/release/CVHub520/X-AnyLabeling?color=ffa"></a>
