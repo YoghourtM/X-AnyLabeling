@@ -70,7 +70,7 @@ tactile_paving: raised yellow guide tiles, bars or dots; crosswalk: white zebra 
 construction_barrier: work-zone fences or water-filled barriers
 ```
 
-Classes not in the prompt are dropped.
+Chinese and English punctuation both work: `:` `：`, `;` `；`, `,` `，`. Everything after the colon is the description, so its commas do not split the class. Classes not in the prompt are dropped.
 
 ### Single image
 
@@ -123,7 +123,17 @@ The service listens on `127.0.0.1:8000` only. The image builds on the local `cgd
 
 **Text prompt**: segments every instance of the given classes.
 
-- Enter English class names separated by commas, e.g. `person, car, traffic light`, and click **Send**. Each instance becomes a polygon labelled with its class.
+- The simplest form is English class names separated by commas, e.g. `person, car, traffic light`. Click **Send**; each instance becomes a polygon labelled with its prompt.
+- When the label should differ from the prompt, write `label: prompt, prompt`, separating entries with `;` or new lines:
+
+  ```text
+  tactile_paving: tactile paving, yellow tactile paving; vehicle: car, vehicle, automobile; person
+  ```
+
+  Each prompt after the colon is sent to SAM and its results get the label. When several prompts find the same object (mask IoU ≥ 0.5), only the highest-scoring one is kept; results of one prompt are never merged with each other. Entries without a colon, like `person`, still use the prompt as the label.
+- Chinese and English punctuation both work: `:` `：`, `;` `；`, `,` `，`. A `.` also acts as a comma, so keep periods out of prompts.
+- Each extra prompt adds about 0.05 s per image (the first request on an image takes about 1 s, mostly image encoding).
+- The merge threshold is `merge_iou` in the server's `configs/auto_labeling/segment_anything_3_1.yaml`.
 - **Confidence** defaults to 0.5; lower it when objects are missed.
 - `Ctrl+B` runs it over a range of images with the same prompt format.
 
