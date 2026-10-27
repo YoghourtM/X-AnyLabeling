@@ -46,7 +46,7 @@ xanylabeling
 Click **VLM Settings** in the auto-labeling bar:
 
 - **Backend**: Codex CLI, Claude CLI or OpenAI-compatible API. An empty model name uses `~/.codex/config.toml` for Codex and the CLI default for Claude.
-- **OpenAI-compatible API**: an empty Base URL or API key falls back to `OPENAI_BASE_URL` / `OPENAI_API_KEY`.
+- **OpenAI-compatible API**: the Base URL usually ends at `/v1`, e.g. `https://example.com/v1`; `/chat/completions` is appended to it. An empty Base URL or API key falls back to `OPENAI_BASE_URL` / `OPENAI_API_KEY`.
 - **Timeout per image**: 600 s by default.
 - **Max polygon vertices**: 40 by default; raise it for complex outlines.
 - **Max image side sent**: 2048 px by default; larger images are downscaled before sending and coordinates are mapped back.
@@ -175,6 +175,8 @@ The **mask fineness** slider sets how many points the polygons have.
 | VLM reports a login or auth error | Log in again (`codex login` / `claude`) or check the API key |
 | Relay returns 400 | JSON Schema output falls back to plain JSON automatically; if it still fails, check that the model accepts images |
 | Batch keeps "backing off" | The provider is rate limiting; lower **Max concurrency** or raise the cooldown |
+| Batch looks serial | Concurrency starts at 1 and doubles after each successful round (1→2→4). At about 75 s per image with Codex, only 1–2 requests run for the first few minutes; the progress bar shows "concurrency x/y, running z". **Send** always labels only the current image; concurrency applies to `Ctrl+B` batches |
 | VLM misses objects | Describe the class in the prompt, or state what to include and exclude in the extra instructions |
 | Remote-Server cannot connect | Run `scripts/sam31_server.sh status`; `start` it if stopped |
 | SAM 3.1 finds too little | Lower the confidence, or use `detector: image_model` if memory allows |
+| SAM 3.1 finds nothing for a class | Give the label several prompts. Grey tactile paving, for example, is missed by `tactile paving` alone but found by `tactile_paving: tactile paving, gray tactile paving, tactile strip` (score 0.53). Try single prompts at confidence 0.1 to compare their scores, then keep the good ones |

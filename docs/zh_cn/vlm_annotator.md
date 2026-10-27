@@ -46,7 +46,7 @@ xanylabeling
 点击自动标注栏上的 **VLM 设置**：
 
 - **后端**：Codex CLI、Claude CLI 或 OpenAI 兼容 API。模型名留空时，Codex 使用 `~/.codex/config.toml` 里的模型，Claude 使用 CLI 默认模型。
-- **OpenAI 兼容 API**：Base URL 和 API key 留空时，分别读取环境变量 `OPENAI_BASE_URL` 和 `OPENAI_API_KEY`。
+- **OpenAI 兼容 API**：Base URL 一般填到 `/v1` 为止，例如 `https://example.com/v1`，程序会在后面拼上 `/chat/completions`。Base URL 和 API key 留空时，分别读取环境变量 `OPENAI_BASE_URL` 和 `OPENAI_API_KEY`。
 - **单张超时**：默认 600 秒。
 - **多边形最大顶点数**：默认 40，类别边界复杂时可以调大。
 - **发送图片最长边**：默认 2048 像素，超过时先缩小再发送，返回的坐标会换算回原图。
@@ -175,6 +175,8 @@ scripts/sam31_server.sh stop     # 停止并释放显存
 | VLM 报未登录或认证失败 | 在终端重新登录 `codex login` / `claude`；或检查 API key |
 | 中转站返回 400 | 不支持 JSON Schema 输出时会自动退回普通 JSON 输出；仍然失败时，确认模型支持图片输入 |
 | 批量时经常显示“降速冷却中” | 服务商在限流，调低 **最大并发** 或调大冷却时间 |
+| 批量看起来像串行 | 并发从 1 开始，每成功一轮翻倍（1→2→4）。Codex 每张约 75 秒时，前两三分钟只有 1–2 个请求，看进度栏的“并发 x/y、进行中 z”即可确认。另外，“发送”按钮只处理当前一张，并发只对 `Ctrl+B` 批量生效 |
 | VLM 漏掉某些目标 | 在提示词里补充描述，或在附加说明里写清楚要什么、不要什么 |
 | Remote-Server 连接失败 | 运行 `scripts/sam31_server.sh status`；服务停止时先 `start` |
 | SAM 3.1 结果太少 | 调低置信度；或者在显存足够时改用 `detector: image_model` |
+| SAM 3.1 完全找不到某个类别 | 给同一个标签多写几个提示词。例如灰色盲道只写 `tactile paving` 一个都找不到，写成 `tactile_paving: tactile paving, gray tactile paving, tactile strip` 就能找到（分数 0.53）。可以先把置信度调到 0.1，逐个试提示词看分数，再选用效果好的 |
