@@ -161,6 +161,10 @@ def _get_model_class(model_type):  # noqa: C901
         from .grounding_dino_api import Grounding_DINO_API
 
         return Grounding_DINO_API
+    elif model_type == "vlm_annotator":
+        from .vlm_annotator import VLMAnnotator
+
+        return VLMAnnotator
     elif model_type == "ram":
         from .ram import RAM
 

@@ -206,6 +206,8 @@
   config_file: ":/segment_anything_vit_l.yaml"
 - model_name: "upn-r20241128"
   config_file: ":/upn.yaml"
+- model_name: "vlm_annotator-r20261026"
+  config_file: ":/vlm_annotator.yaml"
 - model_name: "yolo_nas_l-r20230615"
   config_file: ":/yolo_nas_l.yaml"
 - model_name: "yolo_nas_m-r20230615"

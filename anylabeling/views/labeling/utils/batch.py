@@ -545,6 +545,20 @@ def process_next_image(self, progress_dialog, batch=True):
     if model_type == "remote_server":
         batch_processing_mode = model.get_batch_processing_mode()
 
+    if model_type == "vlm_annotator" and self.text_prompt:
+        from .vlm_batch import start_vlm_batch
+
+        start_vlm_batch(
+            self,
+            progress_dialog,
+            self.image_list[self.image_index : total_images],
+            self.text_prompt,
+            save_result=save_auto_labeling_result,
+            finish_processing=finish_processing,
+            reset_state=_reset_batch_processing_state,
+        )
+        return
+
     if (
         model_type not in _BATCH_PROCESSING_VIDEO_MODELS
         and batch_processing_mode != "video"

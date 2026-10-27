@@ -92,6 +92,7 @@ _CUSTOM_MODELS = [
     "ppocr_v5",
     "ppocr_v6",
     "deimv2",
+    "vlm_annotator",
 ]
 
 
@@ -375,6 +376,7 @@ _AUTO_LABELING_PRESERVE_EXISTING_ANNOTATIONS_STATE_MODELS = [
     "u_rtdetr",
     "yoloe",
     "segment_anything_2_video",
+    "vlm_annotator",
 ]
 
 
@@ -434,6 +436,7 @@ _BATCH_PROCESSING_TEXT_PROMPT_MODELS = [
     "grounding_sam2",
     "segment_anything_3",
     "yoloe",
+    "vlm_annotator",
 ]
 
 

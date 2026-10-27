@@ -42,6 +42,9 @@ from anylabeling.views.labeling.utils.style import (
 from anylabeling.views.labeling.widgets.classes_filter_dialog import (
     ClassesFilterDialog,
 )
+from anylabeling.services.auto_labeling.utils.vlm.i18n import (
+    install_translator as install_vlm_translator,
+)
 from anylabeling.views.labeling.widgets.api_token_dialog import ApiTokenDialog
 from anylabeling.views.labeling.widgets.remote_server_dialog import (
     RemoteServerDialog,
@@ -118,6 +121,7 @@ class AutoLabelingWidget(QWidget):
     def __init__(self, parent):
         super().__init__()
         self.parent = parent
+        install_vlm_translator()
         current_dir = os.path.dirname(__file__)
         uic.loadUi(os.path.join(current_dir, "auto_labeling.ui"), self)
         self.model_selection_scroll_area.setStyleSheet(
@@ -276,6 +280,14 @@ class AutoLabelingWidget(QWidget):
             )
         )
         self.button_set_api_token.clicked.connect(self.on_set_api_token)
+
+        # --- Configuration for: button_vlm_settings ---
+        self.button_vlm_settings.setText(self.tr("VLM Settings"))
+        self.button_vlm_settings.setStyleSheet(get_normal_button_style())
+        self.button_vlm_settings.setToolTip(
+            self.tr("Choose the VLM backend (Codex, Claude, OpenAI API)")
+        )
+        self.button_vlm_settings.clicked.connect(self.on_vlm_settings)
 
         # --- Configuration for: input_box_thres ---
         self.input_box_thres.setText(self.tr("Box threshold"))
@@ -1285,6 +1297,7 @@ class AutoLabelingWidget(QWidget):
             "output_select_combobox",
             "toggle_preserve_existing_annotations",
             "button_set_api_token",
+            "button_vlm_settings",
             "button_classes_filter",
             "button_reset_tracker",
             "upn_select_combobox",
@@ -1416,6 +1429,14 @@ class AutoLabelingWidget(QWidget):
                 self.model_manager.set_auto_labeling_api_token(token)
             except Exception as e:
                 logger.error(f"Error setting API token: {e}")
+
+    def on_vlm_settings(self):
+        """Show the VLM annotator backend settings."""
+        from anylabeling.views.labeling.widgets.vlm_settings_dialog import (
+            VLMSettingsDialog,
+        )
+
+        VLMSettingsDialog(self).exec()
 
     def on_cache_auto_label_changed(self, text, gid):
         self.model_manager.set_cache_auto_label(text, gid)

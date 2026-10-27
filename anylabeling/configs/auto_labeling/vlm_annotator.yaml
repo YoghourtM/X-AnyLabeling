@@ -1,0 +1,4 @@
+type: vlm_annotator
+name: vlm_annotator-r20261026
+provider: Codex / Claude / OpenAI
+display_name: VLM Annotator (Codex / Claude / OpenAI)

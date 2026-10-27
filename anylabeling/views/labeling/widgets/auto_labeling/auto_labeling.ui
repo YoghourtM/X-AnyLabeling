@@ -446,6 +446,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="button_vlm_settings">
+       <property name="text">
+        <string>VLM Settings</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="button_classes_filter">
        <property name="text">
         <string>Classes</string>
