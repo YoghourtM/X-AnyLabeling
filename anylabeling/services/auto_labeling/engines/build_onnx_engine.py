@@ -2,6 +2,10 @@ import os
 import onnx
 import onnxruntime as ort
 
+from anylabeling.views.common.device_manager import (
+    preload_onnxruntime_gpu_libs,
+)
+
 
 class OnnxBaseModel:
     def __init__(
@@ -16,6 +20,7 @@ class OnnxBaseModel:
 
         self.providers = ["CPUExecutionProvider"]
         if device_type.lower() == "gpu":
+            preload_onnxruntime_gpu_libs(ort)
             self.providers = ["CUDAExecutionProvider"]
 
         self.ort_session = ort.InferenceSession(

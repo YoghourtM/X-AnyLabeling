@@ -5,6 +5,43 @@ from typing import Literal, Optional
 logger = logging.getLogger(__name__)
 
 DeviceType = Literal["CPU", "GPU", "AUTO"]
+_ort_gpu_libs_preloaded = False
+
+
+def preload_onnxruntime_gpu_libs(ort_module=None) -> None:
+    """Best-effort preload for CUDA/cuDNN libs used by ONNX Runtime."""
+    global _ort_gpu_libs_preloaded
+    if _ort_gpu_libs_preloaded:
+        return
+
+    _ort_gpu_libs_preloaded = True
+    try:
+        ort = ort_module
+        if ort is None:
+            import onnxruntime as ort
+
+        preload_dlls = getattr(ort, "preload_dlls", None)
+        if preload_dlls is None:
+            return
+
+        for directory in (None, ""):
+            try:
+                preload_dlls(
+                    cuda=True,
+                    cudnn=True,
+                    msvc=False,
+                    directory=directory,
+                )
+            except TypeError:
+                preload_dlls()
+                return
+            except Exception as e:
+                logger.debug(
+                    "Failed to preload ONNX Runtime GPU libraries "
+                    f"from {directory!r}: {e}"
+                )
+    except Exception as e:
+        logger.debug(f"Failed to preload ONNX Runtime GPU libraries: {e}")
 
 
 class DeviceManager:
@@ -64,6 +101,7 @@ class DeviceManager:
             try:
                 import onnxruntime as ort
 
+                preload_onnxruntime_gpu_libs(ort)
                 self._available_providers = ort.get_available_providers()
             except Exception as e:
                 logger.debug(f"Failed to get ONNX providers: {e}")
