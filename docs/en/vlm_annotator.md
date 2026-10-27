@@ -72,6 +72,17 @@ construction_barrier: work-zone fences or water-filled barriers
 
 Chinese and English punctuation both work: `:` `：`, `;` `；`, `,` `，`. Everything after the colon is the description, so its commas do not split the class. Classes not in the prompt are dropped.
 
+**Load from a file**: a prompt can also live in a .txt file, one entry per line; lines starting with `#` are comments:
+
+```text
+# street classes
+tactile_paving: raised yellow guide tiles, bars or dots
+crosswalk: white zebra stripes
+person
+```
+
+Click the folder icon at the right of the prompt box and pick the file. The lines are joined with `; ` into the box so you can check or edit them before sending. UTF-8 and GBK (GB18030) files work. SAM 3.1 text prompts load the same way; see [Tasks](#tasks) for their format.
+
 ### Single image
 
 1. Choose **Polygon** or **Rectangle** output. Rectangles are the polygon's bounding box.
@@ -81,7 +92,7 @@ Chinese and English punctuation both work: `:` `：`, `;` `；`, `,` `，`. Ever
 ### Batch
 
 1. With the model and output chosen, press `Ctrl+B` (or **Auto Run** in the left toolbar).
-2. Pick the image range, then enter the prompt.
+2. Pick the image range, then confirm the prompt: the dialog starts with the auto-labeling bar's prompt, and its folder icon loads one from a file.
 3. Images are sent concurrently; the progress bar shows progress, concurrency, running, retries and failures. Each image is saved as soon as it finishes.
 
 Concurrency adapts like a TCP congestion window:
@@ -135,7 +146,8 @@ The service listens on `127.0.0.1:8000` only. The image builds on the local `cgd
 - Each extra prompt adds about 0.05 s per image (the first request on an image takes about 1 s, mostly image encoding).
 - The merge threshold is `merge_iou` in the server's `configs/auto_labeling/segment_anything_3_1.yaml`.
 - **Confidence** defaults to 0.5; lower it when objects are missed.
-- `Ctrl+B` runs it over a range of images with the same prompt format.
+- The folder icon at the right of the prompt box loads the prompt from a .txt file, one entry per line, e.g. one `label: prompt, prompt` per line.
+- `Ctrl+B` runs it over a range of images with the same prompt format; the batch dialog can load the file too.
 
 **Click / box (single object)**:
 

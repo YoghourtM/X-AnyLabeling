@@ -33,6 +33,9 @@ from anylabeling.views.labeling.schema import IMAGE_TAGS_FIELD
 from anylabeling.views.labeling.shape import Shape
 from anylabeling.views.labeling.utils._io import io_open
 from anylabeling.views.labeling.utils.image_tags import normalize_image_tags
+from anylabeling.views.labeling.utils.prompt_file import (
+    setup_batch_prompt_input,
+)
 from anylabeling.views.labeling.utils.qt import new_icon_path
 from anylabeling.views.labeling.utils.style import get_dialog_style
 from anylabeling.views.labeling.widgets.popup import Popup
@@ -168,6 +171,7 @@ class TextInputDialog(QDialog):
 
         self.text_input = QLineEdit()
         self.text_input.setPlaceholderText(self.tr("Enter prompt here..."))
+        setup_batch_prompt_input(self.text_input, self.parent())
         layout.addWidget(self.text_input)
 
         button_box = QDialogButtonBox(

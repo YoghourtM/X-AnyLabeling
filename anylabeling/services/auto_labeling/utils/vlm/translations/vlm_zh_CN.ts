@@ -146,6 +146,29 @@
     </message>
 </context>
 <context>
+    <name>PromptFile</name>
+    <message>
+        <source>Load prompt from file</source>
+        <translation>从文件加载提示词</translation>
+    </message>
+    <message>
+        <source>Text files (*.txt);;All files (*)</source>
+        <translation>文本文件 (*.txt);;所有文件 (*)</translation>
+    </message>
+    <message>
+        <source>Cannot read {path}: {error}</source>
+        <translation>无法读取 {path}：{error}</translation>
+    </message>
+    <message>
+        <source>{path} has no prompt entries.</source>
+        <translation>{path} 中没有提示词条目。</translation>
+    </message>
+    <message>
+        <source>Load the prompt from a .txt file: one entry per line, lines starting with # are ignored</source>
+        <translation>从 .txt 文件加载提示词：每行一个条目，# 开头的行会被忽略</translation>
+    </message>
+</context>
+<context>
     <name>Model</name>
     <message>
         <source>Enter the classes to label, e.g. 'tactile_paving: raised guide tiles; crosswalk'</source>

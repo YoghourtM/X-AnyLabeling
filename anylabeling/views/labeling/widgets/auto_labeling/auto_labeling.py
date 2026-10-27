@@ -45,6 +45,9 @@ from anylabeling.views.labeling.widgets.classes_filter_dialog import (
 from anylabeling.services.auto_labeling.utils.vlm.i18n import (
     install_translator as install_vlm_translator,
 )
+from anylabeling.views.labeling.utils.prompt_file import (
+    add_prompt_file_action,
+)
 from anylabeling.views.labeling.widgets.api_token_dialog import ApiTokenDialog
 from anylabeling.views.labeling.widgets.remote_server_dialog import (
     RemoteServerDialog,
@@ -288,6 +291,9 @@ class AutoLabelingWidget(QWidget):
             self.tr("Choose the VLM backend (Codex, Claude, OpenAI API)")
         )
         self.button_vlm_settings.clicked.connect(self.on_vlm_settings)
+
+        # --- Load the text prompt from a .txt file ---
+        add_prompt_file_action(self.edit_text, self.parent)
 
         # --- Configuration for: input_box_thres ---
         self.input_box_thres.setText(self.tr("Box threshold"))

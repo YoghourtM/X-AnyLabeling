@@ -58,6 +58,16 @@ def _tr_calls(relative_path):
             context, source = map(_string, call.args[:2])
             if context and source:
                 yield context, source
+    # Module-level ``_tr(text)`` helpers translate in the "PromptFile" context.
+    for node in ast.walk(tree):
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "_tr"
+            and node.args
+            and _string(node.args[0])
+        ):
+            yield "PromptFile", _string(node.args[0])
 
 
 class TestVLMTranslations(unittest.TestCase):
@@ -76,6 +86,7 @@ class TestVLMTranslations(unittest.TestCase):
             "views/labeling/widgets/vlm_settings_dialog.py",
             "views/labeling/utils/vlm_batch.py",
             "services/auto_labeling/vlm_annotator.py",
+            "views/labeling/utils/prompt_file.py",
         ):
             expected.update(_tr_calls(path))
         # Output-mode names are already translated by the bundled zh_CN.qm.
