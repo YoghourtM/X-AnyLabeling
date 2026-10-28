@@ -12,6 +12,7 @@
 - [准备工作](#准备工作)
 - [一、VLM 标注](#一vlm-标注)
 - [二、SAM 3.1 标注](#二sam-31-标注)
+- [三、从视频获取图片](#三从视频获取图片)
 - [常见问题](#常见问题)
 
 ## 准备工作
@@ -32,6 +33,8 @@ xanylabeling
 | OpenAI 兼容 API | 中转站地址（Base URL）、API key 和模型名，接口为 `/chat/completions`，需支持图片输入 |
 
 **SAM 3.1 服务**：需要 [X-AnyLabeling-Server fork](https://github.com/YoghourtM/X-AnyLabeling-Server/tree/feat/sam3.1)、docker、NVIDIA GPU（约 5.5 GB 显存）和 `sam3.1_multiplex.pt` 权重，启动方法见[第二部分](#二sam-31-标注)。只用 VLM 标注时不需要它。
+
+**视频链接**：从 YouTube、B 站等网站下载视频需要 yt-dlp 和 ffmpeg，见[第三部分](#三从视频获取图片)。
 
 ## 一、VLM 标注
 
@@ -168,6 +171,97 @@ scripts/sam31_server.sh stop     # 停止并释放显存
 - 显存 16 GB 以上时，可以把服务端 `configs/auto_labeling/segment_anything_3_1.yaml` 里的 `detector` 改成 `image_model`，分数会和批量流程一致，然后运行 `scripts/sam31_server.sh restart`。
 - 暂不支持 SAM 3.1 视频跟踪。需要视频跟踪时，继续使用 X-AnyLabeling 自带的 SAM2 视频模型。
 
+## 三、从视频获取图片
+
+VLM 和 SAM 3.1 都按单张图片标注，视频要先拆成图片。拆出的图片放在一个普通文件夹里，按 `Ctrl+B` 批量标注即可。
+
+### 1. 本地视频
+
+按 `Ctrl+O`（文件 → 打开视频）选择视频，然后设置三项：
+
+- **抽帧间隔**：每隔几帧取一张，例如 30 fps 的视频填 30 就是每秒 1 张。
+- **文件名前缀**
+- **序列长度**：编号的位数。
+
+帧保存在视频旁边的同名文件夹里，完成后自动打开。
+
+> 同名文件夹已存在时，确认覆盖会删除整个文件夹，里面已经保存的标注也会一起删除。想换间隔重新拆帧，先把旧文件夹改名。
+
+### 2. 视频链接（YouTube、B 站等）
+
+需要先安装 yt-dlp 和 ffmpeg：
+
+```bash
+conda activate x-anylabeling-cu11
+pip install -U "yt-dlp[default,deno]"    # 或在仓库目录运行 pip install -e ".[gpu-cu11,video]"
+sudo apt install ffmpeg             # Ubuntu
+```
+
+`deno` 是 YouTube 需要的 JavaScript 运行环境，会装进同一个 Python 环境；系统里的 Node.js 版本不低于 22 时也可以代替它。网站改版后，旧版 yt-dlp 会下载失败。遇到问题时先运行上面的 `pip install -U` 更新。
+
+1. 点击 **文件 → 打开视频链接**。
+2. 粘贴链接，每行一个，链接后面可以写要下载的时间段（见下面的**下载计划**）。也可以点 **从文件加载链接** 选一个写好的 txt 文件。B 站 App 分享出来的文字（如 `【标题】 https://b23.tv/xxxx`）可以直接粘贴，会自动取出其中的链接。
+3. 设置下表中的选项，然后点 **开始**。
+4. 进度窗口显示当前是第几个视频、第几段，以及下载和抽帧的进度。可以随时取消，已经处理完的部分会保留。
+5. 全部完成后，帧保存目录会自动打开，接着按 `Ctrl+B` 批量标注。如果有下载失败，会列出链接、时间段和原因，例如需要登录、视频已删除、yt-dlp 版本过旧或网络错误。
+
+| 选项 | 说明 |
+| --- | --- |
+| 帧保存目录 | 所有视频的帧都放在这里，默认是 `~/xanylabeling_data/videos/frames_<时间>` |
+| 每秒抽帧数 | 默认 1；0.5 表示每 2 秒取 1 张 |
+| 默认时间段 | 可选，写成 `90`、`1:30` 或 `1:02:03`；用于没有单独写时间段的链接，留空则下载整个视频 |
+| 最高分辨率 | 默认 1080p；只下载画面，不下载声音 |
+| 浏览器登录信息 | 读取所选浏览器里的登录状态，需要先在该浏览器里登录网站。B 站不登录时清晰度受限；YouTube 可能要求验证不是机器人 |
+| 代理 | 默认留空，走系统网络。在中国大陆访问 YouTube 需要代理，例如 `http://127.0.0.1:7890` |
+| 视频保存目录 | 下载的视频存在这里，默认是 `~/xanylabeling_data/videos`。同一个链接再次运行时不会重复下载 |
+| 抽帧后保留视频文件 | 取消勾选后，抽完帧会删除视频 |
+| yt-dlp 命令 | 默认留空：优先使用 X-AnyLabeling 所在 Python 环境里的 yt-dlp，其次使用 PATH 中的 |
+
+**下载计划**：每行写一个链接，后面跟一个或多个时间段。可以直接写在链接框里，也可以存成 txt 文件（UTF-8 或 GBK 编码）再加载：
+
+```text
+# 盲道素材
+https://www.bilibili.com/video/BV1FL4y1g7Pd   0:10-0:30   1:00-1:20
+https://www.youtube.com/watch?v=aqz-KE-bpKQ   5:00-        # 从 5:00 到结尾
+https://www.youtube.com/watch?v=jNQXAC9IVRw                # 不写时间段
+```
+
+- 时间写成秒数、`分:秒` 或 `时:分:秒`，例如 `90`、`1:30`、`1:02:03.5`，中文冒号也可以。
+- 时间段写成 `开始-结束`，`-` 也可以写成 `~` 或 `到`，两边可以有空格。不写结束时间（如 `5:00-`）表示到视频结尾。多个时间段之间用空格、逗号或分号隔开。
+- 不写时间段的链接使用 **默认时间段**；默认时间段也留空，就下载整个视频。
+- 同一个链接写在多行时，各行的时间段合在一起；重叠或首尾相接的时间段合并成一段，例如 `0:10-0:30` 和 `0:25-0:40` 合并成 `0:10-0:40`。
+- 整行以 `#` 开头，或 `#` 前面有空格时，`#` 后面的内容是注释。链接前面的文字会被忽略。
+- 有写错的行时不会开始下载，而是列出行号和原因，例如 `第 3 行：不是有效的时间段：1:3o-2:00`。
+- 每个时间段单独下载，只下这一段。时间段超出视频长度的部分会被忽略；开始时间就已经超出视频长度时，这一段列为失败。
+
+**帧文件名**是 `网站_视频编号_t秒数.jpg`，例如 `bilibili_BV1FL4y1g7Pd_t000020.jpg` 是该视频第 20 秒的画面。每秒多于 1 张时会加上毫秒，例如 `t000010_500`。
+
+**来源记录**：帧保存目录里的 `sources.json` 记录每个视频的链接、标题、作者、授权方式、时间段（每段一条，`start`/`end` 为秒数），以及每张图对应的视频时间，方便以后查数据来源。
+
+- 链接指向播放列表或多 P 视频时，只下载链接对应的那一个视频。
+- 同一个视频用相同的时间段和抽帧数再运行一次，会覆盖同名图片，已保存的标注不受影响。
+
+**在脚本里使用**：同样的下载计划也可以在 Python 里执行，设置沿用对话框里保存的那份：
+
+```python
+from PyQt6.QtCore import QCoreApplication
+from anylabeling.views.labeling.utils import video_download as vd
+
+app = QCoreApplication([])
+jobs, problems = vd.parse_plan(vd.read_links_file("plan.txt"))
+assert not problems, problems
+thread = vd.VideoDownloadThread(jobs, "/path/to/frames", vd.load_settings())
+thread.progress_updated.connect(lambda pct, text: print(pct, text.splitlines()[-1]))
+thread.finished_all.connect(lambda folder, count, failures: print(count, failures))
+thread.run()  # 全部完成后才返回
+```
+
+> 请只下载你有权使用的视频。他人视频的抽帧仅供自己训练使用，请勿公开发布。
+
+### 3. 跨帧跟踪
+
+上面两种方式都把视频当成一组互不相关的图片。如果需要同一个目标在各帧里保持同一个编号，请使用官方的 SAM 2 Video（需要安装 `sam2` 包）或 SAM 3 Video（需要 X-AnyLabeling-Server 和 `sam3.pt` 权重）。本 fork 的 SAM 3.1 服务不提供视频跟踪。
+
 ## 常见问题
 
 | 现象 | 处理 |
@@ -180,3 +274,5 @@ scripts/sam31_server.sh stop     # 停止并释放显存
 | Remote-Server 连接失败 | 运行 `scripts/sam31_server.sh status`；服务停止时先 `start` |
 | SAM 3.1 结果太少 | 调低置信度；或者在显存足够时改用 `detector: image_model` |
 | SAM 3.1 完全找不到某个类别 | 给同一个标签多写几个提示词。例如灰色盲道只写 `tactile paving` 一个都找不到，写成 `tactile_paving: tactile paving, gray tactile paving, tactile strip` 就能找到（分数 0.53）。可以先把置信度调到 0.1，逐个试提示词看分数，再选用效果好的 |
+| 打开视频链接提示需要登录 | 先在浏览器里登录该网站，再在“浏览器登录信息”里选择这个浏览器；提示读取失败时，关闭浏览器再试 |
+| 打开视频链接下载失败 | 先运行 `pip install -U "yt-dlp[default,deno]"` 更新 yt-dlp；在中国大陆访问 YouTube 还需要设置代理 |

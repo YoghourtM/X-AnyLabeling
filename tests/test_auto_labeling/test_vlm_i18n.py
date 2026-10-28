@@ -36,11 +36,12 @@ def _receiver(call):
     return value.id if isinstance(value, ast.Name) else None
 
 
-def _tr_calls(relative_path):
+def _tr_calls(relative_path, helper_context=None):
     """Yield (context, source) for tr()/translate() calls in a module.
 
     ``self.tr`` uses the enclosing class as context; ``app.tr`` in
-    vlm_batch runs on the LabelingWidget.
+    vlm_batch runs on the LabelingWidget; a module-level ``_tr(text)``
+    helper translates in ``helper_context``.
     """
     with open(os.path.join(ROOT, relative_path), encoding="utf-8") as stream:
         tree = ast.parse(stream.read())
@@ -58,16 +59,16 @@ def _tr_calls(relative_path):
             context, source = map(_string, call.args[:2])
             if context and source:
                 yield context, source
-    # Module-level ``_tr(text)`` helpers translate in the "PromptFile" context.
     for node in ast.walk(tree):
         if (
-            isinstance(node, ast.Call)
+            helper_context
+            and isinstance(node, ast.Call)
             and isinstance(node.func, ast.Name)
             and node.func.id == "_tr"
             and node.args
             and _string(node.args[0])
         ):
-            yield "PromptFile", _string(node.args[0])
+            yield helper_context, _string(node.args[0])
 
 
 class TestVLMTranslations(unittest.TestCase):
@@ -82,13 +83,15 @@ class TestVLMTranslations(unittest.TestCase):
 
     def test_every_plugin_string_has_a_translation(self):
         expected = set()
-        for path in (
-            "views/labeling/widgets/vlm_settings_dialog.py",
-            "views/labeling/utils/vlm_batch.py",
-            "services/auto_labeling/vlm_annotator.py",
-            "views/labeling/utils/prompt_file.py",
+        for path, helper_context in (
+            ("views/labeling/widgets/vlm_settings_dialog.py", None),
+            ("views/labeling/utils/vlm_batch.py", None),
+            ("services/auto_labeling/vlm_annotator.py", None),
+            ("views/labeling/utils/prompt_file.py", "PromptFile"),
+            ("views/labeling/utils/video_download.py", "VideoDownload"),
+            ("views/labeling/widgets/video_url_dialog.py", None),
         ):
-            expected.update(_tr_calls(path))
+            expected.update(_tr_calls(path, helper_context))
         # Output-mode names are already translated by the bundled zh_CN.qm.
         expected -= {("Model", "Polygon"), ("Model", "Rectangle")}
         expected |= {

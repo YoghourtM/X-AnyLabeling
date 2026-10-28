@@ -10,10 +10,11 @@
 
 ## About this fork
 
-This fork of [CVHub520/X-AnyLabeling](https://github.com/CVHub520/X-AnyLabeling) adds two auto-labeling modes that need no manual review:
+This fork of [CVHub520/X-AnyLabeling](https://github.com/CVHub520/X-AnyLabeling) adds two auto-labeling modes that need no manual review, plus frames from video links:
 
 - **VLM Annotator**: a vision-language model (local Codex CLI, local Claude CLI, or an OpenAI-compatible relay) draws polygons or rectangles directly for any classes you describe in a text prompt. Batch runs send images concurrently with a TCP-style adaptive window.
 - **SAM 3.1** through Remote-Server: text prompts, clicks / a box, and example boxes, served locally by the [X-AnyLabeling-Server fork](https://github.com/YoghourtM/X-AnyLabeling-Server/tree/feat/sam3.1).
+- **Open Video URL** (File menu): downloads videos from YouTube, Bilibili and other sites with yt-dlp, optionally only chosen time ranges of each (a links .txt file can plan them), extracts frames into one folder ready for batch labeling, and records each frame's source in `sources.json`.
 
 Usage: [docs/en/vlm_annotator.md](./docs/en/vlm_annotator.md) ([中文](./docs/zh_cn/vlm_annotator.md)). The rest of this README is upstream's.
 

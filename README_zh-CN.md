@@ -10,10 +10,11 @@
 
 ## 关于本 fork
 
-本仓库 fork 自 [CVHub520/X-AnyLabeling](https://github.com/CVHub520/X-AnyLabeling)，新增两种不需要人工审核的自动标注方式：
+本仓库 fork 自 [CVHub520/X-AnyLabeling](https://github.com/CVHub520/X-AnyLabeling)，新增两种不需要人工审核的自动标注方式，以及从视频链接获取图片的功能：
 
 - **VLM Annotator**：由视觉语言模型（本机 Codex CLI、本机 Claude CLI 或 OpenAI 兼容中转站）根据文本提示词，直接为任意类别生成多边形或矩形。批量标注时多张图片并发请求，并发数像 TCP 发送窗口一样自动调整。
 - **SAM 3.1**：通过 Remote-Server 使用，支持文本提示、点击或框选单个目标、示例框找相似，由本地运行的 [X-AnyLabeling-Server fork](https://github.com/YoghourtM/X-AnyLabeling-Server/tree/feat/sam3.1) 提供。
+- **打开视频链接**（文件菜单）：用 yt-dlp 从 YouTube、B 站等网站下载视频并抽帧，每个视频可以只下载指定的几个时间段（可以用 txt 文件规划），帧放在同一个文件夹里，可以直接批量标注，每张图的来源记录在 `sources.json` 中。
 
 使用说明：[docs/zh_cn/vlm_annotator.md](./docs/zh_cn/vlm_annotator.md)（[English](./docs/en/vlm_annotator.md)）。以下内容为上游原文。
 

@@ -69,6 +69,7 @@ from .utils.file_search import (
     matches_label_attribute,
 )
 from .utils.qt import new_icon_path
+from .utils.video_download import new_open_video_url_action
 from .utils.theme import get_theme
 from .pointcloud.icons import get_icon
 from .widgets.description_editor import DescriptionEditor
@@ -633,6 +634,7 @@ class LabelingWidget(LabelDialog):
             "file-video-camera",
             self.tr("Open video file"),
         )
+        open_video_url = new_open_video_url_action(self)
         opendir = action(
             self.tr("Open Dir"),
             self.open_folder_dialog,
@@ -2183,6 +2185,7 @@ class LabelingWidget(LabelDialog):
                 open_prev_unchecked_image,
                 opendir,
                 openvideo,
+                open_video_url,
                 toggle_compare_view,
                 self.menus.recent_files,
                 save,
