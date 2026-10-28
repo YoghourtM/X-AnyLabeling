@@ -126,6 +126,13 @@ gpu-cu11 = [
     "numpy<2.0.0",
     "onnx>=1.15.0,<1.16.1",
     "onnxruntime-gpu>=1.15.0,<1.19.0; platform_system != 'Darwin'",
+    # OpenCV >= 4.12 needs numpy 2; pinning it spares pip from backtracking.
+    "opencv-contrib-python-headless<4.12",
+]
+# File > Open Video URL: downloads videos with yt-dlp (update it often);
+# deno is the JavaScript runtime YouTube needs
+video = [
+    "yt-dlp[default,deno]",
 ]
 # CUDA 13.x: ONNXRuntime GPU >= 1.27
 gpu-cu13 = [
