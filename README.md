@@ -16,7 +16,81 @@ This fork of [CVHub520/X-AnyLabeling](https://github.com/CVHub520/X-AnyLabeling)
 - **SAM 3.1** through Remote-Server: text prompts, clicks / a box, and example boxes, served locally by the [X-AnyLabeling-Server fork](https://github.com/YoghourtM/X-AnyLabeling-Server/tree/feat/sam3.1).
 - **Open Video URL** (File menu): downloads videos from YouTube, Bilibili and other sites with yt-dlp, optionally only chosen time ranges of each (a links .txt file can plan them), extracts frames into one folder ready for batch labeling, and records each frame's source in `sources.json`.
 
-Usage: [docs/en/vlm_annotator.md](./docs/en/vlm_annotator.md) ([中文](./docs/zh_cn/vlm_annotator.md)). The rest of this README is upstream's.
+### Quick start
+
+**Install** (in this repository):
+
+```bash
+conda activate x-anylabeling-cu11
+pip install -e ".[gpu-cu11,video]"   # video: yt-dlp for Open Video URL
+sudo apt install ffmpeg              # extracts frames (Ubuntu)
+xanylabeling
+```
+
+**Example 1: label any class with a VLM**
+
+1. Open an image folder, press `Ctrl+A` to show the auto-labeling bar, and pick the model **VLM Annotator (Codex / Claude / OpenAI)**.
+2. In **VLM Settings**, pick a backend: Codex CLI (default; run `codex login` once in a terminal), Claude CLI, or an OpenAI-compatible relay with its Base URL, API key and model name.
+3. Choose **Polygon** or **Rectangle** output, type a prompt and click **Send**:
+
+   ```text
+   tactile_paving: raised yellow paving with bars or dots; crosswalk: white zebra stripes; person
+   ```
+
+   The label comes before the colon and a description for the model after it; separate entries with semicolons. Plain names work too, e.g. `person, car`.
+4. Press `Ctrl+B` to label the whole folder: images are sent concurrently with an adaptive window, and each is saved as soon as it is done.
+
+**Example 2: segment common classes with SAM 3.1**
+
+Start the local service from the [X-AnyLabeling-Server fork](https://github.com/YoghourtM/X-AnyLabeling-Server/tree/feat/sam3.1) (branch `feat/sam3.1`):
+
+```bash
+export SAM31_CHECKPOINT=/path/to/sam3.1_multiplex.pt
+scripts/sam31_server.sh build    # first time only
+scripts/sam31_server.sh start    # ready in about 20 s; run stop afterwards to free the GPU
+```
+
+In the auto-labeling bar pick **Remote-Server** with the address `http://127.0.0.1:8000`, then the model **Segment Anything 3.1** and the task **Text prompt**, and type:
+
+```text
+person; vehicle: car, truck, bus; tactile_paving: tactile paving, gray tactile paving
+```
+
+`vehicle: car, truck, bus` labels whatever the three prompts find as `vehicle`, keeping one shape per object found more than once. The other two tasks are a single object from clicks or a box (Click / box) and objects similar to example boxes (Example boxes).
+
+**Example 3: keep prompts in a .txt file**
+
+Long class lists can live in a .txt file with one entry per line; lines starting with `#` are comments:
+
+```text
+# street.txt
+person
+vehicle: car, truck, bus
+tactile_paving: tactile paving, gray tactile paving
+```
+
+Click the folder icon to the right of the prompt box to load it; the lines are joined into the box so you can check them before sending. This works for the VLM and SAM 3.1, and in the `Ctrl+B` prompt dialog too.
+
+**Example 4: frames from video links**
+
+Open **File → Open Video URL** and paste links, or click **Load links from file** to pick a .txt file. Each line is a link followed by the time ranges to download:
+
+```text
+# plan.txt
+https://www.bilibili.com/video/BV1FL4y1g7Pd   0:05-0:08   0:20-0:23   0:35-
+https://www.youtube.com/watch?v=aqz-KE-bpKQ   1:00 ~ 1:05, 1:03-1:10
+https://www.youtube.com/watch?v=jNQXAC9IVRw   # no time ranges
+```
+
+- `0:35-` runs from 0:35 to the end of the video. `~` also works as the dash; separate ranges with spaces, commas or semicolons.
+- Overlapping ranges are merged, so the second line downloads `1:00-1:10`. Ranges for a link on several lines are merged too.
+- A link without ranges uses the dialog's **Default time range**, or the whole video when that is empty as well.
+- Each range is downloaded on its own. If a line has a mistake, nothing starts; the dialog lists the line numbers and what is wrong.
+- At 1 frame per second, the first line gives 13 frames, `bilibili_BV1FL4y1g7Pd_t000005.jpg` to `…_t000041.jpg`; the seconds in each name are the moment the frame shows. `sources.json` in the frames folder records which video and second each image came from.
+
+When the frames are done, their folder opens; label it with `Ctrl+B` as in example 1 or 2.
+
+Full guide (every setting, troubleshooting, running a download plan from Python): [docs/en/vlm_annotator.md](./docs/en/vlm_annotator.md) ([中文](./docs/zh_cn/vlm_annotator.md)). The rest of this README is upstream's.
 
 <p align="center">
     <a href="./LICENSE"><img src="https://img.shields.io/badge/License-GPL%20v3-blue.svg"></a>

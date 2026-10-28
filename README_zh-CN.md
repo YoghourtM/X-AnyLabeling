@@ -16,7 +16,81 @@
 - **SAM 3.1**：通过 Remote-Server 使用，支持文本提示、点击或框选单个目标、示例框找相似，由本地运行的 [X-AnyLabeling-Server fork](https://github.com/YoghourtM/X-AnyLabeling-Server/tree/feat/sam3.1) 提供。
 - **打开视频链接**（文件菜单）：用 yt-dlp 从 YouTube、B 站等网站下载视频并抽帧，每个视频可以只下载指定的几个时间段（可以用 txt 文件规划），帧放在同一个文件夹里，可以直接批量标注，每张图的来源记录在 `sources.json` 中。
 
-使用说明：[docs/zh_cn/vlm_annotator.md](./docs/zh_cn/vlm_annotator.md)（[English](./docs/en/vlm_annotator.md)）。以下内容为上游原文。
+### 快速上手
+
+**安装**（在本仓库目录下）：
+
+```bash
+conda activate x-anylabeling-cu11
+pip install -e ".[gpu-cu11,video]"   # video：打开视频链接需要的 yt-dlp
+sudo apt install ffmpeg              # 抽帧用（Ubuntu）
+xanylabeling
+```
+
+**例 1：用 VLM 标注任意类别**
+
+1. 打开图片目录，按 `Ctrl+A` 打开自动标注栏，模型选 **VLM Annotator (Codex / Claude / OpenAI)**。
+2. 点 **VLM 设置** 选择后端：Codex CLI（默认，先在终端运行 `codex login`）、Claude CLI，或者填 Base URL、API key 和模型名的 OpenAI 兼容中转站。
+3. 输出选 **多边形** 或 **矩形**，输入提示词，点 **发送**：
+
+   ```text
+   tactile_paving: 黄色凸起的导盲砖，条纹或圆点; crosswalk: 白色斑马线; person
+   ```
+
+   冒号前是标签名，冒号后是给模型看的描述，条目之间用分号分隔；只写类别名也可以，例如 `person, car`。
+4. 按 `Ctrl+B` 批量标注整个目录：多张图片并发请求，并发数自动调整，每张完成后立即保存。
+
+**例 2：用 SAM 3.1 分割常见类别**
+
+先在 [X-AnyLabeling-Server fork](https://github.com/YoghourtM/X-AnyLabeling-Server/tree/feat/sam3.1)（`feat/sam3.1` 分支）里启动本地服务：
+
+```bash
+export SAM31_CHECKPOINT=/path/to/sam3.1_multiplex.pt
+scripts/sam31_server.sh build    # 仅第一次
+scripts/sam31_server.sh start    # 约 20 秒就绪；用完运行 stop 释放显存
+```
+
+在自动标注栏选 **Remote-Server**，地址填 `http://127.0.0.1:8000`，模型选 **Segment Anything 3.1**，任务选 **Text prompt**，输入：
+
+```text
+person; vehicle: car, truck, bus; tactile_paving: tactile paving, gray tactile paving
+```
+
+`vehicle: car, truck, bus` 会把三个提示词找到的目标都标成 `vehicle`，重复找到的同一个目标只保留一个。另外两个任务是点击或框选单个目标（Click / box）和示例框找相似（Example boxes）。
+
+**例 3：提示词存成 txt 文件**
+
+类别多时可以写进 txt 文件，每行一个条目，`#` 开头的行是注释：
+
+```text
+# street.txt
+person
+vehicle: car, truck, bus
+tactile_paving: tactile paving, gray tactile paving
+```
+
+点提示词输入框右侧的文件夹图标选择文件，各行会合并填进输入框，检查后再发送。VLM 和 SAM 3.1 都能用，`Ctrl+B` 批量的提示词弹窗里也有这个按钮。
+
+**例 4：从视频链接拆帧**
+
+点 **文件 → 打开视频链接**，粘贴链接，或点 **从文件加载链接** 选择 txt 文件。每行一个链接，后面写要下载的时间段：
+
+```text
+# plan.txt
+https://www.bilibili.com/video/BV1FL4y1g7Pd   0:05-0:08   0:20-0:23   0:35-
+https://www.youtube.com/watch?v=aqz-KE-bpKQ   1:00 ~ 1:05, 1:03-1:10
+https://www.youtube.com/watch?v=jNQXAC9IVRw   # 不写时间段
+```
+
+- `0:35-` 表示从 0:35 到视频结尾。`-` 也可以写成 `~` 或 `到`；多个时间段之间用空格、逗号或分号隔开。
+- 重叠的时间段会合并：第二行实际下载 `1:00-1:10`。同一个链接写在多行时也会合并。
+- 不写时间段的链接使用对话框里的 **默认时间段**；它也留空时，下载整个视频。
+- 每个时间段单独下载。有写错的行时不会开始下载，而是列出行号和原因。
+- 每秒抽 1 帧时，第一行得到 `bilibili_BV1FL4y1g7Pd_t000005.jpg` 到 `…_t000041.jpg` 共 13 张，文件名里的秒数就是画面所在的时刻。帧保存目录里的 `sources.json` 记录每张图来自哪个视频的哪一秒。
+
+拆帧完成后，帧保存目录会自动打开，接着按例 1 或例 2 用 `Ctrl+B` 批量标注。
+
+完整说明（各项设置、常见问题、在 Python 脚本里执行下载计划）：[docs/zh_cn/vlm_annotator.md](./docs/zh_cn/vlm_annotator.md)（[English](./docs/en/vlm_annotator.md)）。以下内容为上游原文。
 
 <p align="center">
     <a href="./LICENSE"><img src="https://img.shields.io/badge/License-GPL%20v3-blue.svg"></a>
